@@ -61,6 +61,14 @@ public class User {
         }
     }
 
+    public boolean hasName() {
+        return name != null && !name.isEmpty();
+    }
+
+    public int getScore() {
+        return scannedTreasure.size() - catchTimes;
+    }
+
     public static User createEmptyUser() {
         return new User();
     }
