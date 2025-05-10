@@ -75,4 +75,8 @@ public class User {
         }
         scannedTreasure.add(treasure);
     }
+
+    public void found() {
+        catchTimes++;
+    }
 }

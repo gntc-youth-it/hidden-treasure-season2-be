@@ -2,6 +2,7 @@ package com.hidden_treasure_season2.user.controller;
 
 import com.hidden_treasure_season2.user.model.request.UserNamingRequest;
 import com.hidden_treasure_season2.user.model.response.UserCreationResponse;
+import com.hidden_treasure_season2.user.model.response.UserFoundResponse;
 import com.hidden_treasure_season2.user.model.response.UserNamingResponse;
 import com.hidden_treasure_season2.user.model.response.UserQRResponse;
 import com.hidden_treasure_season2.user.model.response.UserResponse;
@@ -41,6 +42,11 @@ public class UserController {
     @PostMapping("/name")
     public ResponseEntity<UserNamingResponse> nameUser(@RequestBody UserNamingRequest request) {
         return ResponseEntity.ok(userService.nameUser(request));
+    }
+
+    @PostMapping("/found")
+    public ResponseEntity<UserFoundResponse> foundUser(@RequestParam String userCode) {
+        return ResponseEntity.ok(userService.foundUser(userCode));
     }
 
 }
