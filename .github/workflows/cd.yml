@@ -44,15 +44,27 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            # 환경 변수 설정
+            # 특정 JAR 파일 이름 지정 (프로젝트 이름 기준)
+            JAR_NAME="hidden_treasure_season2-0.0.1-SNAPSHOT.jar"
+            JAR_PATH="/home/ec2-user/app/$JAR_NAME"
+            
+            # JAR 파일 존재 확인
+            if [ ! -f "$JAR_PATH" ]; then
+              echo "Error: JAR file not found at $JAR_PATH"
+              ls -la /home/ec2-user/app/
+              exit 1
+            fi
+            
+            echo "Using JAR file: $JAR_PATH"
+            
+            # 환경 변수 설정 (export 제거)
             sudo tee /home/ec2-user/app/application-env.sh << EOF
-            #!/bin/bash
-            export DB_HOST=${{ secrets.DB_HOST }}
-            export DB_USERNAME=${{ secrets.DB_USERNAME }}
-            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_USERNAME=${{ secrets.DB_USERNAME }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             EOF
             
-            sudo chmod +x /home/ec2-user/app/application-env.sh
+            sudo chmod 644 /home/ec2-user/app/application-env.sh
             
             # 서비스 파일 설정
             sudo tee /etc/systemd/system/spring-app.service << EOF
@@ -65,17 +77,65 @@ jobs:
             User=ec2-user
             WorkingDirectory=/home/ec2-user/app
             EnvironmentFile=/home/ec2-user/app/application-env.sh
-            ExecStart=/usr/bin/java -jar /home/ec2-user/app/*.jar
+            ExecStart=/usr/bin/java -jar $JAR_PATH
             Restart=always
             
             [Install]
             WantedBy=multi-user.target
             EOF
             
+            # CORS 설정을 위한 Nginx 설정
+            sudo tee /etc/nginx/conf.d/api.bhohwa.click.conf << EOF
+            server {
+                listen 80;
+                server_name api.bhohwa.click;
+                return 301 https://\$host\$request_uri;
+            }
+
+            server {
+                listen 443 ssl;
+                server_name api.bhohwa.click;
+            
+                ssl_certificate /etc/letsencrypt/live/api.bhohwa.click/fullchain.pem;
+                ssl_certificate_key /etc/letsencrypt/live/api.bhohwa.click/privkey.pem;
+            
+                # CORS 헤더 추가
+                add_header 'Access-Control-Allow-Origin' 'https://www.bhohwa.click' always;
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+                add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+                add_header 'Access-Control-Allow-Credentials' 'true' always;
+                add_header 'Access-Control-Max-Age' '1728000' always;
+            
+                # OPTIONS 요청 처리
+                if (\$request_method = 'OPTIONS') {
+                    add_header 'Access-Control-Allow-Origin' 'https://www.bhohwa.click' always;
+                    add_header 'Access-Control-Allow-Methods' 'GET, POST, PUT, DELETE, OPTIONS' always;
+                    add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization' always;
+                    add_header 'Access-Control-Allow-Credentials' 'true' always;
+                    add_header 'Access-Control-Max-Age' '1728000' always;
+                    add_header 'Content-Type' 'text/plain charset=UTF-8';
+                    add_header 'Content-Length' '0';
+                    return 204;
+                }
+            
+                location / {
+                    proxy_pass http://127.0.0.1:8080;
+                    proxy_set_header Host \$host;
+                    proxy_set_header X-Real-IP \$remote_addr;
+                    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                    proxy_set_header X-Forwarded-Proto \$scheme;
+                    proxy_read_timeout 90;
+                }
+            }
+            EOF
+            
+            # 설정 테스트 및 서비스 재시작
+            sudo nginx -t && sudo systemctl restart nginx
             sudo systemctl daemon-reload
             sudo systemctl enable spring-app
             sudo systemctl restart spring-app
             
             # 서비스 상태 확인 및 로그 출력
+            sleep 5
             sudo systemctl status spring-app
             journalctl -u spring-app -n 50 --no-pager
