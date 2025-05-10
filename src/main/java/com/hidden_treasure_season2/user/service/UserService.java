@@ -4,9 +4,11 @@ import com.hidden_treasure_season2.common.exception.EntityNotFoundException;
 import com.hidden_treasure_season2.common.exception.model.ExceptionCode;
 import com.hidden_treasure_season2.qr.domain.QRCode;
 import com.hidden_treasure_season2.user.domain.User;
-import com.hidden_treasure_season2.user.model.UserCreationResponse;
-import com.hidden_treasure_season2.user.model.UserQRResponse;
-import com.hidden_treasure_season2.user.model.UserResponse;
+import com.hidden_treasure_season2.user.model.request.UserNamingRequest;
+import com.hidden_treasure_season2.user.model.response.UserCreationResponse;
+import com.hidden_treasure_season2.user.model.response.UserNamingResponse;
+import com.hidden_treasure_season2.user.model.response.UserQRResponse;
+import com.hidden_treasure_season2.user.model.response.UserResponse;
 import com.hidden_treasure_season2.user.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +31,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserQRResponse getUserQR(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(ExceptionCode.USER_NOT_FOUND));
+        User user = findUser(userId);
         return new UserQRResponse(user);
     }
 
@@ -44,5 +45,20 @@ public class UserService {
         return new UserCreationResponse();
     }
 
+    @Transactional
+    public UserNamingResponse nameUser(UserNamingRequest request) {
+        User user = findUser(request);
+        user.setName(request);
+        userRepository.save(user);
+        return new UserNamingResponse(user);
+    }
 
+    private User findUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(ExceptionCode.USER_NOT_FOUND));
+    }
+
+    private User findUser(UserNamingRequest request) {
+        return findUser(request.getUserId());
+    }
 }

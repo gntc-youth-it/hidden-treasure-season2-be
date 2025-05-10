@@ -3,6 +3,7 @@ package com.hidden_treasure_season2.user.domain;
 import com.google.zxing.WriterException;
 import com.hidden_treasure_season2.qr.domain.QRCode;
 import com.hidden_treasure_season2.treasure.domain.Treasure;
+import com.hidden_treasure_season2.user.model.request.UserNamingRequest;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
@@ -60,5 +61,9 @@ public class User {
 
     public static User createEmptyUser() {
         return new User();
+    }
+
+    public void setName(UserNamingRequest request) {
+        this.name = request.getName();
     }
 }

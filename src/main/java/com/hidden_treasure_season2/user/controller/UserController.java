@@ -1,8 +1,10 @@
 package com.hidden_treasure_season2.user.controller;
 
-import com.hidden_treasure_season2.user.model.UserCreationResponse;
-import com.hidden_treasure_season2.user.model.UserQRResponse;
-import com.hidden_treasure_season2.user.model.UserResponse;
+import com.hidden_treasure_season2.user.model.request.UserNamingRequest;
+import com.hidden_treasure_season2.user.model.response.UserCreationResponse;
+import com.hidden_treasure_season2.user.model.response.UserNamingResponse;
+import com.hidden_treasure_season2.user.model.response.UserQRResponse;
+import com.hidden_treasure_season2.user.model.response.UserResponse;
 import com.hidden_treasure_season2.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +36,11 @@ public class UserController {
     @PostMapping
     public ResponseEntity<UserCreationResponse> createUsers(@RequestParam Integer userCount) {
         return ResponseEntity.ok(userService.createUsers(userCount));
+    }
+
+    @PostMapping("/name")
+    public ResponseEntity<UserNamingResponse> nameUser(@RequestBody UserNamingRequest request) {
+        return ResponseEntity.ok(userService.nameUser(request));
     }
 
 }
