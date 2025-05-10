@@ -21,7 +21,6 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User {
 
     @Id
@@ -44,7 +43,7 @@ public class User {
 
     private Integer catchTimes;
 
-    private User() {
+    protected User() {
         this.qrCode = QRCode.generateNewQR();
         this.catchTimes = 0;
     }
