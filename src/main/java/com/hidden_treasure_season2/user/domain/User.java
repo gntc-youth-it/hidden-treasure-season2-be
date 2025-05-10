@@ -1,6 +1,8 @@
 package com.hidden_treasure_season2.user.domain;
 
 import com.google.zxing.WriterException;
+import com.hidden_treasure_season2.common.exception.BadRequestException;
+import com.hidden_treasure_season2.common.exception.model.ExceptionCode;
 import com.hidden_treasure_season2.qr.domain.QRCode;
 import com.hidden_treasure_season2.treasure.domain.Treasure;
 import com.hidden_treasure_season2.user.model.request.UserNamingRequest;
@@ -65,5 +67,12 @@ public class User {
 
     public void setName(UserNamingRequest request) {
         this.name = request.getName();
+    }
+
+    public void findTreasure(Treasure treasure) {
+        if (scannedTreasure.contains(treasure)) {
+            throw new BadRequestException(ExceptionCode.TREASURE_ALREADY_FOUND);
+        }
+        scannedTreasure.add(treasure);
     }
 }

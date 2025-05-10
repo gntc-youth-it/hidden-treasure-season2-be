@@ -1,4 +1,4 @@
-package com.hidden_treasure_season2.treasure.model;
+package com.hidden_treasure_season2.treasure.model.response;
 
 import lombok.Getter;
 
