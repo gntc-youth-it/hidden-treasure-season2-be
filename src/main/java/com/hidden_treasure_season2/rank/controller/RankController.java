@@ -1,5 +1,6 @@
 package com.hidden_treasure_season2.rank.controller;
 
+import com.hidden_treasure_season2.rank.model.UserRankInfoResponse;
 import com.hidden_treasure_season2.rank.model.UserRankResponse;
 import com.hidden_treasure_season2.rank.service.RankService;
 import java.util.List;
@@ -19,5 +20,10 @@ public class RankController {
     @GetMapping
     public ResponseEntity<List<UserRankResponse>> getAllRanks() {
         return ResponseEntity.ok(rankService.getAllRanks());
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserRankInfoResponse> getUserRank(@PathVariable Long userId) {
+        return ResponseEntity.ok(rankService.getUserRank(userId));
     }
 }
