@@ -44,11 +44,20 @@ public class User {
 
     private Integer catchTimes;
 
+    private User() {
+        this.qrCode = QRCode.generateNewQR();
+        this.catchTimes = 0;
+    }
+
     public String getQRImage() {
         try {
             return qrCode.toImage();
         } catch (IOException | WriterException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static User createEmptyUser() {
+        return new User();
     }
 }
